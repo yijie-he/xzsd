@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.zxsd.store.mapper.StoreInfoMapper">
+    <!--查询省-->
+    <select id="getProvince" resultType="com.ruoyi.project.zxsd.store.domain.ProvinceEntity">
+        select p.province_code as provinceCode,p.province_name as provinceName
+        from t_code_province p
+    </select>
+    <!--查询区-->
+    <select id="getCounty" parameterType="string" resultType="com.ruoyi.project.zxsd.store.domain.CountyEntity">
+        select c.county_code as countyCode,c.county_name as countyName
+        from t_code_county c
+        where c.province_code = #{provinceCode}
+    </select>
+    <!--查询门店-->
+    <select id="getListStoreInfo" parameterType="com.ruoyi.project.zxsd.store.domain.StoreInfoEntity" resultType="com.ruoyi.project.zxsd.store.domain.StoreInfoEntity">
+        select
+        s.store_no as storeNo,
+        s.store_name as storeName,
+        s.store_address as storeAddress,
+        s.store_phone as storePhone,
+        u.user_realname as userRealname,
+        s.user_code as userCode,
+        s.id as id,
+        s.sort_no as sortNo,
+        p.province_name as province,
+        s.province_no as provinceNo,
+        c.county_name as county,
+        s.county_no as countyNo,
+        s.star_level as starLevel,
+        s.business_license as businessLicense,
+        s.identity_card as identityCard,
+        s.invite_code as inviteCode
+        from  t_store_info s
+        left join t_code_province p on s.province_no = p.province_code
+        left join t_code_county c on s.county_no = c.county_code and s.province_no = c.province_code
+        left join t_sys_user u on s.user_code = u.user_code
+        where s.is_deleted = 0
+        <if test="storeName != null and storeName !=''">
+            and s.store_name like concat('%',#{storeName},'%')
+        </if>
+        <if test="storeNo != null and storeNo !=''">
+            and s.store_no = #{storeNo}
+        </if>
+        <if test="userRealname != null and userRealname !=''">
+            and u.user_realname like concat('%',#{userRealname},'%')
+        </if>
+        <if test="provinceNo != null and provinceNo !=''">
+            and s.province_no = #{provinceNo}
+        </if>
+        <if test="countyNo != null and countyNo !=''">
+            and s.county_no = #{countyNo}
+        </if>
+        <if test="inviteCode != null and inviteCode !=''">
+            and s.invite_code = #{inviteCode}
+        </if>
+        order by s.gmt_modified desc
+    </select>
+    <!--详情-->
+    <select id="getDetail" parameterType="string" resultType="com.ruoyi.project.zxsd.store.domain.StoreInfoEntity">
+        select
+        s.store_no as storeNo,
+        s.store_name as storeName,
+        s.store_address as storeAddress,
+        s.store_phone as storePhone,
+        u.user_realname as userRealname,
+        s.user_code as userCode,
+        s.id as id,
+        s.sort_no as sortNo,
+        p.province_name as province,
+        s.province_no as provinceNo,
+        c.county_name as county,
+        s.county_no as countyNo,
+        s.star_level as starLevel,
+        s.business_license as businessLicense,
+        s.identity_card as identityCard
+        from  t_store_info s
+        left join t_code_province p on s.province_no = p.province_code
+        left join t_code_county c on s.county_no = c.county_code and s.province_no = c.province_code
+        left join t_sys_user u on s.user_code = u.user_code
+        where  s.id=#{id} and s.is_deleted = 0
+    </select>
+
+    <select id="getMaxSortNo" parameterType="String" resultType="int">
+        select max(su.sort_no) from ${tableName} su
+    </select>
+
+    <!--    新增-->
+    <insert id="addStore" parameterType="com.ruoyi.project.zxsd.store.domain.StoreInfoEntity">
+        INSERT INTO `xzsd`.`t_store_info` (
+        `store_no`,
+        `store_name`,
+        `store_address`,
+        `store_phone`,
+        `user_code`,
+        `is_deleted`,
+        `id`,
+        `sort_no`,
+        `gmt_create`,
+        `create_by`,
+        `gmt_modified`,
+        `last_modified_by`,
+        `version`,
+        `province`,
+        `province_no`,
+        `county`,
+        `county_no`,
+        `star_level`,
+        `business_license`,
+        `identity_card`,
+        `invite_code`
+        )
+        VALUES
+            (
+            #{storeNo},
+            #{storeName},
+            #{storeAddress},
+            #{storePhone},
+            #{userCode},
+            0,
+            #{id},
+            #{sortNo},
+            now(),
+            #{createBy},
+            now(),
+            #{updateBy},
+            0,
+            #{province},
+            #{provinceNo},
+            #{county},
+            #{countyNo},
+            #{starLevel},
+            #{businessLicense},
+            #{identityCard},
+            #{inviteCode}
+            );
+    </insert>
+
+    <update id="editStore" parameterType="com.ruoyi.project.zxsd.store.domain.StoreInfoEntity">
+        UPDATE `xzsd`.`t_store_info`
+        SET
+        `store_name` = #{storeName},
+        `store_address` = #{storeAddress},
+        `store_phone` = #{storePhone},
+        `user_code` = #{userCode},
+        `gmt_modified` = now(),
+        `last_modified_by` = #{updateBy},
+        `province` = #{province},
+        `province_no` = #{provinceNo},
+        `county` = #{county},
+        `county_no` = #{countyNo},
+        `business_license` = #{businessLicense}
+        WHERE
+	    `user_code` = #{userCode};
+    </update>
+
+    <update id="delStore" parameterType="map">
+        <foreach collection="storeInfoEntity" item="storeInfoEntity" separator=";">
+            UPDATE t_store_info
+            SET
+            is_deleted = 1,
+            gmt_modified = now(),
+            last_modified_by = #{updateBy}
+            where id = #{storeInfoEntity.id}
+        </foreach>
+    </update>
+
+    <select id="getStoreInfoByUserCode" parameterType="com.ruoyi.project.zxsd.store.domain.StoreInfoEntity" resultType="com.ruoyi.project.zxsd.store.domain.StoreInfoEntity">
+        select
+        s.store_no as storeNo,
+        s.province_no as provinceNo,
+        s.county_no as countyNo
+        from  t_store_info s
+        where s.user_code = #{userId}
+    </select>
+
+    <select id="getDetails" resultType="com.ruoyi.project.zxsd.store.domain.StoreInfoEntity">
+        select
+        s.store_no as storeNo,
+        s.store_name as storeName,
+        s.store_address as storeAddress,
+        s.store_phone as storePhone,
+        u.user_realname as userRealname,
+        s.id as id,
+        s.sort_no as sortNo,
+        p.province_name as province,
+        s.province_no as provinceNo,
+        c.county_name as county,
+        s.county_no as countyNo,
+        s.star_level as starLevel,
+        s.business_license as businessLicense,
+        s.identity_card as identityCard
+        from  t_store_info s
+        left join t_code_province p on s.province_no = p.province_code
+        left join t_code_county c on s.county_no = c.county_code and s.province_no = c.province_code
+        left join t_sys_user u on s.user_code = u.user_code
+    </select>
+</mapper>

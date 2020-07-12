@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.zxsd.ordercar.mapper.OrderCarMapper">
+
+
+    <insert id="addOrderCar" parameterType="com.ruoyi.project.zxsd.ordercar.domain.OrderCarEntity">
+          insert into t_order_car(
+        user_code,
+        sku_no,
+        cnt,
+        is_deleted,
+        id,
+        gmt_create,
+        create_by,
+        gmt_modified,
+        last_modified_by,
+        is_selected
+        )
+        VALUES
+        (#{userCode},
+        #{skuNo},
+        #{cnt},
+        0,
+        #{id},
+         now(),
+        #{createBy},
+        now(),
+        #{updateBy},
+        0
+        )
+    </insert>
+
+    <select id="getOrderCar" resultType="com.ruoyi.project.zxsd.ordercar.domain.OrderCarEntity" parameterType="map">
+        select
+        o.user_code as userCode,
+        o.sku_no as skuNo,
+        o.cnt as cnt,
+        o.id as id,
+        o.gmt_create as createTime,
+        o.is_selected as isSelected,
+        p.sur_pic_url as surPicUrl,
+        s.detail as detail,
+        s.selling_price as sellingPrice,
+        s.sku_name as skuName
+        from t_order_car o
+        left join t_goods_sku s on o.sku_no = s.sku_no
+        left join t_goods_sku_pic p on p.sku_no = s.sku_no
+        where s.is_deleted = 0
+        and p.is_deleted = 0
+        <if test="userCode!='' and userCode!=null">
+            and   o.user_code = #{userCode}
+        </if>
+        <if test="skuNo!='' and skuNo!=null">
+            and   o.sku_no = #{skuNo}
+        </if>
+        and o.is_deleted = 0
+    </select>
+
+    <update id="delOrderCar" parameterType="map">
+        <foreach collection="orderCarEntity" index="index" item="item" separator=";">
+        update t_order_car
+        SET
+        is_deleted = 1,
+        gmt_modified = now(),
+        last_modified_by = #{item.updateBy}
+        where is_deleted = 0
+        and id = #{item.id}
+        and user_code = #{item.userCode}
+        </foreach>
+
+    </update>
+    <update id="editOrderCar" parameterType="map">
+        update t_order_car
+        SET
+        <if test="cnt!=null">
+          cnt = #{cnt},
+        </if>
+        <if test="isSelected!=null">
+          is_selected = #{isSelected},
+        </if>
+        gmt_modified = now(),
+        last_modified_by = #{updateBy}
+        where  user_code = #{userCode}
+        <if test="id!='' and id!=null">
+            and id = #{id}
+        </if>
+        <if test="skuNo!='' and skuNo!=null">
+            and sku_no = #{skuNo}
+        </if>
+
+    </update>
+</mapper>

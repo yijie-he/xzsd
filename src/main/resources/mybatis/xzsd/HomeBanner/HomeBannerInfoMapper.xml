@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.zxsd.homebanner.mapper.HomeBannerInfoMapper">
+    <update id="addHomeBanner">
+        insert  into t_runpic_info(
+        pic_url,
+        sku_no,
+        pic_status,
+        id,
+        sort_no,
+        gmt_create,
+        create_by,
+        gmt_modified,
+        last_modified_by,
+        is_deleted,
+        start_time,
+        end_time
+        )
+        value (
+        #{picUrl},
+        #{skuNo},
+        '0',
+        #{id},
+        #{sortNo},
+        now(),
+        #{createBy},
+        now(),
+        #{updateBy},
+        '0',
+        #{startTime},
+        #{endDateTime}
+        )
+    </update>
+
+    <select id="getHomeBanner" parameterType="map" resultType="com.ruoyi.project.zxsd.homebanner.domain.HomeBannerEntity">
+        select
+        r.sort_no as sortNo,
+        r.pic_url as picUrl,
+        r.pic_status as picStatus,
+        r.start_time as startTime,
+        r.end_time as endDateTime,
+        r.id as id,
+        g.id as skuId,
+        r.sku_no as skuNo
+        from t_runpic_info r
+        left join t_goods_sku g on r.sku_no = g.sku_no
+        where r.is_deleted = 0
+        and g.is_deleted = 0
+        <if test="picStatus == 1 or picStatus == 0">
+            and r.pic_status = #{picStatus}
+        </if>
+        order by r.gmt_modified desc
+    </select>
+
+    <update id="delHomeBanner" parameterType="map">
+        update t_runpic_info
+        set
+        is_deleted = 1,
+        gmt_modified = now(),
+        last_modified_by = #{updateBy}
+        where
+        id = #{id}
+    </update>
+
+    <update id="trueHomeBanner" parameterType="map">
+        update t_runpic_info
+        set
+        pic_status = 0,
+        gmt_modified = now(),
+        last_modified_by = #{updateBy}
+        where
+        id = #{id}
+    </update>
+
+    <update id="falseHomeBanner" parameterType="map">
+        update t_runpic_info
+        set
+        pic_status = 1,
+        gmt_modified = now(),
+        last_modified_by = #{updateBy}
+        where
+        id = #{id}
+    </update>
+</mapper>

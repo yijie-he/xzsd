@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.zxsd.sys.mapper.SystemMenuMapper">
+
+    <insert id="insertSysMenu" parameterType="com.ruoyi.project.zxsd.sys.domain.SystemMenuEntity">
+        INSERT into t_sys_menu
+        (menu_code,
+        menu_name,
+        menu_url,
+        parent_menu_code,
+        type,
+        level,
+        auth_code,
+        remark,
+        is_deleted,
+        id,
+        sort_no,
+        gmt_create,
+        create_by,
+        gmt_modified,
+        last_modified_by,
+        icon)
+        VALUES
+        (#{menuCode},
+        #{menuName},
+        #{menuUrl},
+        #{parentMenuCode},
+        #{type},
+        #{level},
+        #{authCode},
+        #{remark},
+        '0',
+        #{id},
+        #{sortNo},
+        now(),
+        #{createBy},
+        now(),
+        #{updateBy},
+        #{icon})
+    </insert>
+
+    <select id="getMenuByUserRole" parameterType="int" resultType="com.ruoyi.project.zxsd.sys.domain.SystemMenuEntity">
+        select
+        m.menu_code as menuCode,
+        m.menu_name as menuName,
+        m.parent_menu_code as parentMenuCode,
+        m.menu_url as menuUrl,
+        m.level as level,
+        m.remark as remark,
+        m.type as type,
+        m.icon as icon,
+        m.auth_code as authCode
+        from t_sys_menu m
+        where 1=1
+        <if test="userRole !='' and userRole != null and userRole != 0">
+           and m.auth_code = #{userRole}
+        </if>
+        and m.is_deleted = '0'
+    </select>
+    <select id="getParentLevel" parameterType="String" resultType="int">
+        select p.level from t_sys_menu p where p.menu_code = #{parentMenuCode}
+    </select>
+    <update id="editMenuByUserRole" parameterType="com.ruoyi.project.zxsd.sys.domain.SystemMenuEntity">
+        UPDATE `xzsd`.`t_sys_menu`
+        SET `menu_name` = #{menuName},`auth_code` = #{authCode}, `menu_url` = #{menuUrl},`remark` = #{remark},`gmt_modified` = now(), `last_modified_by` = #{updateBy} WHERE `menu_code` = #{menuCode};
+    </update>
+    <select id="getMenuByMenuCode" parameterType="string" resultType="int">
+        select
+        count(*)
+        from t_sys_menu m
+        where m.parent_menu_code = #{menuCode}
+        and m.is_deleted = '0'
+    </select>
+    <update id="delMenuByMenuCode" parameterType="map">
+        UPDATE `xzsd`.`t_sys_menu`
+        SET `is_deleted` = 1,`gmt_modified` = now(), `last_modified_by` = #{updateBy} WHERE `menu_code` = #{menuCode};
+    </update>
+</mapper>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.zxsd.hotgoods.mapper.HotGoodsMapper">
+    <insert id="addHotGoods" parameterType="map">
+        INSERT into t_home_hot_goods
+        (
+        sku_no,
+        sku_name,
+        is_deleted,
+        id,
+        sort_no,
+        gmt_create,
+        create_by,
+        gmt_modified,
+        last_modified_by,
+        version,
+        detail,
+        selling_price
+        )
+        VALUES
+        (
+        #{skuNo},#{skuName},0,#{id},#{sortNo},now(),#{createBy},now(),#{updateBy},1,#{detail},#{sellingPrice}
+        )
+    </insert>
+<!--    删除-->
+    <update id="delhotGoods" parameterType="map">
+        <foreach collection="hotGoodsEntity" index="index" item="item" separator=";">
+            update t_home_hot_goods
+            SET
+            is_deleted = 1,
+            gmt_modified = now(),
+            last_modified_by = #{item.updateBy}
+            where is_deleted = 0
+            and sku_no = #{item.skuNo}
+        </foreach>
+    </update>
+    <select id="addGoods" parameterType="string" resultType="com.ruoyi.project.zxsd.hotgoods.domain.HotGoodsEntity">
+        select
+        sku_name as skuName,
+        selling_price as sellingPrice,
+        detail as detail
+        from t_goods_sku
+        where sku_no = #{skuNo}
+    </select>
+    <select id="getHotGoods" parameterType="map" resultType="com.ruoyi.project.zxsd.hotgoods.domain.HotGoodsEntity">
+        select
+        h.sku_no as skuNo,
+        h.sku_name as skuName,
+        h.sort_no as sortNo,
+        h.selling_price as sellingPrice,
+        h.detail as detail,
+        g.id as id,
+        h.gmt_create as createTime,
+        p.sur_pic_url as surPicUrl
+        from t_home_hot_goods h,
+        t_goods_sku_pic p,
+        t_goods_sku g
+        where p.is_deleted = 0 and h.sku_no = p.sku_no and p.sku_no = g.sku_no and h.sku_no=g.sku_no
+        <if test="skuNo != null  and skuNo != ''"> and h.sku_no = #{skuNo}</if>
+        <if test="skuName != null  and skuName != ''"> and h.sku_name like concat('%', #{skuName}, '%')</if>
+        and h.is_deleted = 0
+        and g.is_deleted = 0
+    </select>
+
+    <select id="getHotGood" parameterType="map" resultType="com.ruoyi.project.zxsd.hotgoods.domain.HotGoodsEntity">
+        select
+        sku_no as skuNo,
+        sku_name as skuName,
+        sort_no as sortNo,
+        selling_price as sellingPrice,
+        detail as detail,
+        gmt_create as createTime
+        from t_home_hot_goods
+        where is_deleted = 0
+        <if test="skuNo != null  and skuNo != ''">
+            and sku_no = #{skuNo}
+        </if>
+        <if test="skuName != null  and skuName != ''">
+            and sku_name like concat('%', #{skuName}, '%')
+        </if>
+    </select>
+    <select id="getHotGoodsT" resultType="com.ruoyi.project.zxsd.hotgoods.domain.HotGoodsEntity">
+        select
+        h.sku_no as skuNo,
+        h.sku_name as skuName,
+        h.sort_no as sortNo,
+        h.selling_price as sellingPrice,
+        h.detail as detail,
+        g.id as id,
+        h.gmt_create as createTime,
+        p.sur_pic_url as surPicUrl
+        from t_home_hot_goods h,
+        t_goods_sku_pic p,
+        t_goods_sku g
+        where p.is_deleted = 0 and h.sku_no = p.sku_no and p.sku_no = g.sku_no and h.sku_no=g.sku_no
+        <if test="skuNo != null  and skuNo != ''"> and h.sku_no = #{skuNo}</if>
+        <if test="skuName != null  and skuName != ''"> and h.sku_name like concat('%', #{skuName}, '%')</if>
+        and h.is_deleted = 0
+        and g.is_deleted = 0
+        group by  g.id
+    </select>
+</mapper>

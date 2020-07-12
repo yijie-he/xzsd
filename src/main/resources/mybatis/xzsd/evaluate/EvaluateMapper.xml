@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.zxsd.evaluate.mapper.EvaluateMapper">
+
+    <insert id="addEvaluate" parameterType="map">
+        INSERT INTO t_goods_evaluate (
+        sku_no,
+        user_code,
+        user_star,
+        user_img,
+        user_evaluate,
+        id,
+        sort_no,
+        gmt_create,
+        create_by,
+        gmt_modified,
+        last_modified_by,
+        version,
+        is_deleted,
+        eva_code
+              )
+        VALUES
+        ( #{skuNo},
+        #{userCode},
+        #{userStar},
+        #{userImg},
+        #{userEvaluate},
+        #{id},
+        #{sortNo},
+        now(),
+        #{createBy},
+        now(),
+        #{updateBy},
+        1,
+        0,
+        #{evaCode})
+    </insert>
+    <select id="getEvaluate" parameterType="map" resultType="com.ruoyi.project.zxsd.evaluate.domain.EvaluateEntity">
+        select
+        g.user_star as userStar,
+        g.user_img as userImg,
+        g.user_evaluate as userEvaluate,
+        g.gmt_modified as updateTime,
+        u.nick_name as nickName,
+        g.id as id
+        from t_goods_evaluate g,
+        sys_user u
+        where u.user_id = g.user_code
+        <if test="userCode!='' and userCode!=null">
+            and   g.user_code = #{userCode}
+        </if>
+        <if test="skuNo!='' and skuNo!=null">
+            and   g.sku_no = #{skuNo}
+        </if>
+        <if test="minValue != null">
+            and g.user_star >= #{minValue}
+        </if>
+        <if test="maxValue != null">
+            and  #{maxValue} >= g.user_star
+        </if>
+        and g.is_deleted = 0
+    </select>
+
+    <update id="changeOrderEvi" parameterType="map">
+        update t_order_detail
+        set
+        is_evi=1,
+        gmt_modified = now(),
+        last_modified_by = #{createBy}
+        where sku_no = #{skuNo}
+    </update>
+</mapper>

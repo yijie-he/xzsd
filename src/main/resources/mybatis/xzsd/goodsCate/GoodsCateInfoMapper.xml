@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.zxsd.goodscate.mapper.GoodsCateMapper">
+    <insert id="addGoodsCate" parameterType="com.ruoyi.project.zxsd.goodscate.domain.GoodsCateEntity">
+        INSERT into t_code_cate
+        (cate_code,
+        cate_name,
+        cate_code_parent,
+        level,
+        remark,
+        is_parent,
+        is_deleted,
+        id,
+        sort_no,
+        gmt_create,
+        create_by,
+        gmt_modified,
+        last_modified_by,
+        version)
+        VALUES
+        (#{cateCode},
+        #{cateName},
+        #{cateCodeParent},
+        #{level},
+        #{remark},
+        #{isParent},
+        0,
+        #{id},
+        #{sortNo},
+        now(),
+        #{createBy},
+        now(),
+        #{updateBy},
+        0)
+    </insert>
+
+    <select id="getCateCodeParent" parameterType="map" resultType="java.lang.Integer">
+        select p.level from t_code_cate p where p.cate_code = #{cateCodeParent}
+    </select>
+
+    <update id="setParent" parameterType="map">
+        UPDATE t_code_cate
+        SET
+        is_parent = 1,
+        gmt_modified = now(),
+        last_modified_by = #{updateBy}
+        WHERE
+        cate_code = #{codeParent}
+    </update>
+
+    <select id="getGoodsCate" resultType="com.ruoyi.project.zxsd.goodscate.domain.GoodsCateEntity">
+        select
+        c.cate_code_parent as cateCodeParent,
+        c.cate_code as cateCode,
+        c.cate_name as cateName,
+        c.remark as remark,
+        c.id as id,
+        c.level as level
+        from t_code_cate c
+        where is_deleted = 0
+    </select>
+
+    <update id="editGoodsCate" parameterType="map">
+        update t_code_cate
+        set
+        cate_name = #{cateName},
+        remark = #{remark},
+        gmt_modified = now(),
+        last_modified_by = #{updateBy}
+        where id = #{id}
+    </update>
+
+    <select id="sonGoodsCate" parameterType="map" resultType="int">
+        select
+        count(*)
+        from t_code_cate m
+        where m.cate_code_parent = #{cateCode}
+        and m.is_deleted = '0'
+    </select>
+    <select id="getGoodCate" resultType="com.ruoyi.project.zxsd.goodscate.domain.GoodsCateEntity">
+        select
+        c.cate_code_parent as cateCodeParent,
+        c.cate_code as cateCode,
+        c.cate_name as cateName,
+        c.remark as remark,
+        c.id as id,
+        c.level as level
+        from t_code_cate c
+        where is_deleted = 0
+        <if test="cateCode!='' and cateCode!=null">
+            and c.cate_code_parent = ""
+            and c.cate_code =#{cateCode}
+        </if>
+        <if test="cateCodeParent!='' and cateCodeParent!=null">
+            and c.cate_code_parent = #{cateCodeParent}
+        </if>
+    </select>
+
+    <select id="getGoodCates" resultType="com.ruoyi.project.zxsd.goodscate.domain.GoodsCateEntity">
+        select
+        c.cate_code_parent as cateCodeParent,
+        c.cate_code as cateCode,
+        c.cate_name as cateName,
+        c.remark as remark,
+        c.id as id,
+        c.level as level
+        from t_code_cate c
+        where c.is_deleted = 0
+        and (c.cate_code_parent is null or c.cate_code_parent ='')
+    </select>
+
+    <update id="delGoodsCate">
+        update t_code_cate
+        set
+        is_deleted = 1,
+        gmt_modified = now(),
+        last_modified_by = #{updateBy}
+        where cate_code = #{cateCode}
+    </update>
+
+    <select id="getGoodsCateName" parameterType="com.ruoyi.project.zxsd.goodscate.domain.GoodsCateEntity" resultType="com.ruoyi.project.zxsd.goodscate.domain.GoodsCateEntity">
+        select
+        c.cate_code_parent as cateCodeParent,
+        c.cate_name as cateName,
+        c.cate_code as cateCode
+        from t_code_cate c
+        where c.is_deleted = 0
+        and c.cate_code = #{cateCode}
+    </select>
+</mapper>

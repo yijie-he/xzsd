@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.zxsd.order.mapper.OrderMapper">
+
+<!--	只需要写商品编号和数量-->
+    <insert id="addOrder" parameterType="map">
+INSERT INTO t_order_master(
+	order_no,
+	user_code,
+	shipping_user,
+	order_money,
+	district_money,
+	shipping_money,
+	payment_money,
+	shipping_time,
+	pay_time,
+	receive_time,
+	order_status,
+	receiver_no,
+	is_deleted,
+	id,
+	sort_no,
+	gmt_create,
+	create_by,
+	gmt_modified,
+	last_modified_by,
+	version,
+	remark,
+	store_no,
+	store_name
+)
+VALUES
+        <foreach collection="orderList" index="index" item="item" separator=",">
+	(
+		#{item.orderNo},
+		#{item.userCode},
+		#{item.shippingUser},
+		#{item.orderMoney},
+			#{item.districtMoney},
+			#{item.shippingMoney},
+			#{item.paymentMoney},
+		NULL,
+			now(),
+			NULL,
+			'0',
+		NULL,
+			'0',
+		#{item.id},
+		#{item.sortNo},
+		now(),
+		#{item.createBy},
+		now(),
+		#{item.updateBy},
+			'0',
+		NULL,
+		#{item.storeNo},
+		#{item.storeName}
+	)
+        </foreach>
+    </insert>
+
+    <insert id="addOrderDetail" parameterType="map">
+INSERT INTO t_order_detail(
+	order_detail_code,
+	sku_no,
+	goods_name,
+	goods_cnt,
+	goods_price,
+	fee_money,
+	channel_type,
+	is_deleted,
+	id,
+	sort_no,
+	gmt_create,
+	create_by,
+	gmt_modified,
+	last_modified_by,
+	version,
+	order_no,
+	receive_time,
+	is_received,
+	shipping_time,
+	is_shipped,
+	is_evi
+)
+VALUES
+<foreach collection="orderDetailResultList" index="index" item="item" separator=",">
+	(
+		#{item.orderDetailCode},
+		#{item.skuNo},
+		#{item.goodsName},
+		#{item.goodsCnt},
+		#{item.goodsPrice},
+			'0',
+			'0',
+	    '0',
+		#{item.id},
+		#{item.sortNo},
+		now(),
+		#{item.createBy},
+		now(),
+		#{item.updateBy},
+		'0',
+		#{item.orderNo},
+		NULL,
+		'0',
+		NULL,
+		'0',
+		'0'
+	)
+</foreach>
+    </insert>
+<!--	加销量-->
+	<update id="upSaleCnt" parameterType="map">
+		<foreach collection="orderDetailResultList" index="index" item="item" separator=";">
+			update t_goods_sku
+			SET
+			sale_cnt = #{item.number2},
+			amount_cnt = #{item.number},
+			gmt_modified = now(),
+			last_modified_by = #{item.updateBy}
+			where sku_no = #{item.skuNo}
+		</foreach>
+	</update>
+
+	<select id="getOrderList" resultType="com.ruoyi.project.zxsd.order.domain.OrderEntity" parameterType="com.ruoyi.project.zxsd.order.domain.OrderEntity">
+		select
+		o.order_no as orderNo,
+		o.payment_money as paymentMoney,
+		o.order_status as orderStatus,
+		o.store_no as storeNo,
+		u.user_realname as shippingUser,
+		u.phone as phone,
+		o.pay_time as payTime,
+		o.store_name as storeName,
+		o.remark as remark,
+		o.user_code as userCode,
+		o.shipping_money as shippingMoney,
+		o.district_money as districtMoney,
+		o.pay_time as payTime,
+		o.id as id
+		from t_order_master o
+		left join t_sys_user u on o.user_code = u.user_code
+		left join sys_user s on s.user_id = u.user_code
+		where 1=1
+		<if test="shippingUser != null and shippingUser!= ''">
+			and s.user_name = #{shippingUser}
+		</if>
+		<if test="orderNo != null and orderNo!= ''">
+			and o.order_no = #{orderNo}
+		</if>
+		<if test="phone != null and phone!= ''">
+			and u.phone = #{phone}
+		</if>
+		<if test="orderStatus != null and orderStatus!= ''">
+			and o.order_status = #{orderStatus}
+		</if>
+		<if test="userCode != null and userCode!= ''">
+			and o.user_code = #{userCode}
+		</if>
+		<if test="storeNo != null and storeNo!= ''">
+			and o.store_no = #{storeNo}
+		</if>
+		order by o.gmt_modified desc
+	</select>
+	<select id="getOrderMenu" parameterType="string" resultType="com.ruoyi.project.zxsd.order.domain.OrderDetailEntity">
+		select
+		d.order_detail_code as orderDetailCode,
+		u.user_code as userCode,
+		d.order_no as orderNo,
+		d.sku_no as skuNo,
+		d.goods_name as goodsName,
+		o.order_status as orderStatus,
+		o.store_no as storeNo,
+		d.goods_cnt as goodsCnt,
+		d.goods_price as goodsPrice,
+		u.user_realname as shippingUser,
+		u.phone as phone,
+		d.id as id,
+		o.payment_money as paymentMoney,
+		o.shipping_money as shippingMoney,
+		o.district_money as districtMoney,
+		o.pay_time as payTime,
+		g.advertising as advertising,
+		g.detail as detail,
+		p.sur_pic_url as surPicUrl,
+		d.is_evi as isEvi
+		from t_order_detail d
+		left join t_order_master o on o.order_no = d.order_no
+		left join t_sys_user u on o.user_code = u.user_code
+		left join t_goods_sku g on g.sku_no = d.sku_no
+		left join t_goods_sku_pic p on d.sku_no = p.sku_no
+		where p.is_deleted =0
+		<if test="orderNo != null and orderNo!= ''">
+			and d.order_no = #{orderNo}
+		</if>
+		<if test="orderStatus != null and orderStatus!= ''">
+			and o.order_status = #{orderStatus}
+		</if>
+		<if test="id != null and id!= ''">
+			and d.id =#{id}
+		</if>
+		order by o.gmt_modified desc
+	</select>
+
+	<update id="editOrderMenu" parameterType="map">
+		update t_order_master
+		SET
+		order_status = #{orderStatus},
+		gmt_modified = now(),
+		last_modified_by = #{updateBy}
+		where order_no = #{orderNo}
+	</update>
+</mapper>

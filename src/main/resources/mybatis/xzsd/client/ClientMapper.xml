@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.zxsd.client.mapper.ClientMapper">
+
+
+    <select id="getUserByUserRole" parameterType="Map" resultType="com.ruoyi.project.zxsd.client.domain.ClientEntity">
+        select
+        u.user_name as userName,
+        su.user_realname as userRealname,
+        su.id_card as idCard,
+        su.sex as sex,
+        su.tel as tel,
+        su.phone as phone,
+        su.email as email
+        from sys_user u,t_sys_user su
+        where u.user_id = su.user_code
+        and   su.role = 3
+        <if test="userRealname!='' and userRealname!=null">
+            and su.user_realname like concat('%',#{userRealname},'%')
+        </if>
+        <if test="userName!='' and userName!=null">
+            and   u.user_name = #{userName}
+        </if>
+        <if test="sex!=null">
+            and   su.sex = #{sex}
+        </if>
+        and su.is_deleted = '0'
+    </select>
+
+</mapper>

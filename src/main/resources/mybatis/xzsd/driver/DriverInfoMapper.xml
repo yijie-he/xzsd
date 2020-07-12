@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.zxsd.driver.mapper.DriverInfoMapper">
+    <insert id="addDriver" parameterType="com.ruoyi.project.zxsd.driver.domain.DriverInfoEntity">
+        INSERT INTO t_driver_info (
+        driver_no,
+        user_code,
+        is_deleted,
+        id,
+        sort_no,
+        gmt_create,
+        create_by,
+        gmt_modified,
+        last_modified_by,
+        province_no,
+        county_no,
+        store_no
+        )
+        VALUES
+        (
+            #{driverNo},
+            #{userId},
+            0,
+            #{id},
+            #{sortNo},
+            now(),
+            #{createBy},
+            now(),
+            #{updateBy},
+            #{provinceNo},
+            #{countyNo},
+            #{storeNo}
+        )
+    </insert>
+
+    <select id="getDriver" parameterType="Map" resultType="com.ruoyi.project.zxsd.driver.domain.DriverInfoEntity">
+        SELECT
+        d.driver_no as driverNo,
+        d.store_no as storeNo,
+        s.user_name as userName,
+        t.user_realname as userRealname,
+        t.id_card as idCard,
+        d.user_code as userId,
+        t.phone as phone,
+        t.tel as tel,
+        t.email as email,
+        p.province_name as provinceName,
+        d.province_no as provinceNo,
+        c.county_name as countyName,
+        d.county_no as countyNo,
+        d.id as id
+        from t_driver_info d
+        left join t_sys_user t on d.user_code = t.user_code
+        left join sys_user s on d.user_code = s.user_id
+        left join t_code_province p on d.province_no = p.province_code
+        left join t_code_county c on d.county_no = c.county_code and d.province_no = c.province_code
+        where
+        d.is_deleted = 0
+        <if test="storeNo != '' and storeNo != null">
+            and  d.store_no = #{storeNo}
+        </if>
+        <if test="provinceNo != '' and provinceNo != null">
+            and  d.province_no = #{provinceNo}
+        </if>
+        <if test="countyNo != '' and countyNo != null">
+            and  d.county_no = #{countyNo}
+        </if>
+        <if test="userRealname != '' and userRealname != null">
+            and  t.user_realname like concat('%',#{userRealname},'%')
+        </if>
+        <if test="driverNo != '' and driverNo != null">
+            and  d.driver_no = #{driverNo}
+        </if>
+        order by d.gmt_modified desc
+    </select>
+
+    <update id="editDriver" parameterType="Map">
+        UPDATE t_driver_info
+        SET province_no = #{provinceNo},
+        county_no = #{countyNo},
+        gmt_modified = now(),
+        last_modified_by = #{updateBy}
+        where user_code = #{userId}
+    </update>
+
+    <update id="delDriver" parameterType="Map">
+        <foreach collection="driverInfoEntity" item="driverInfoEntity" separator=";">
+        UPDATE t_driver_info
+        SET
+        is_deleted = 1,
+        gmt_modified = now(),
+        last_modified_by = #{updateBy}
+        where id = #{driverInfoEntity.id}
+        </foreach>
+    </update>
+</mapper>

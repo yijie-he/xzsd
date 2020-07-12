@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.zxsd.goods.mapper.GoodsInfoMapper">
+
+    <insert id="addGoodsList" parameterType="Map">
+        INSERT into t_goods_sku
+        (
+        sku_no,
+        sku_name,
+        outside_no,
+        cate_code,
+        fix_price,
+        cost_price,
+        selling_price,
+        sale_cnt,
+        channel_type,
+        is_deleted,
+        id,
+        sort_no,
+        gmt_create,
+        create_by,
+        gmt_modified,
+        last_modified_by,
+        version,
+        detail,
+        star_level,
+        putaway_time,
+        status,
+        browse_count,
+        author,
+        advertising,
+        isbn,
+        press,
+        amount_cnt,
+        getout_time
+        )
+        VALUES
+        <foreach collection="goodsList" index="index" item="item" separator=",">
+            (
+            #{item.skuNo},#{item.skuName},#{item.outsideNo},#{item.cateCode},#{item.fixPrice},#{item.costPrice},#{item.sellingPrice},
+            #{item.saleCnt},#{item.channelType},'0',#{item.id},#{item.sortNo},now(),#{item.createBy},now(),#{item.updateBy},'1',#{item.detail},
+            #{item.starLevel},#{item.putawayTime},#{item.status},#{item.browseCount},#{item.author},#{item.advertising},#{item.isbn},#{item.press},#{item.amountCnt},#{item.getoutTime}
+            )
+        </foreach>
+    </insert>
+
+    <select id="getGoodsList" parameterType="com.ruoyi.project.zxsd.goods.domain.GoodsEntity" resultType="com.ruoyi.project.zxsd.goods.domain.GoodsEntity">
+        select
+        sku.sku_no as skuNo,
+        sku.sku_name as skuName,
+        sku.outside_no as outsideNo,
+        st.store_name as storeName,
+        sku.cate_code as cateCode,
+        sku.fix_price as fixPrice,
+        sku.cost_price as costPrice,
+        sku.selling_price as sellingPrice,
+        sku.sale_cnt as saleCnt,
+        sku.channel_type as channelType,
+        sku.id as id,
+        sku.sort_no as sortNo,
+        sku.detail as detail,
+        sku.star_level as starLevel,
+        sku.putaway_time as putawayTime,
+        sku.status as status,
+        sku.browse_count as browseCount,
+        sku.author as author,
+        sku.advertising as advertising,
+        sku.isbn as isbn,
+        sku.press as press,
+        sku.amount_cnt as amountCnt,
+        sku.getout_time as getoutTime,
+        two.cate_name as cateTwoName,
+        one.cate_name as cateOneName,
+        t.sur_pic_url as picStr
+        from t_goods_sku sku
+        left join t_code_cate two on sku.cate_code = two.cate_code
+        left join t_code_cate one on sku.cate_code = two.cate_code and two.cate_code_parent = one.cate_code
+        left join t_store_info st on sku.outside_no = st.store_no
+        left join t_goods_sku_pic t on t.sku_no = sku.sku_no
+        where t.is_deleted = 0
+        <if test="skuName != null and skuName!= ''">
+           and sku.sku_name like concat('%',#{skuName},'%')
+        </if>
+        <if test="skuNo != null and skuNo!= ''">
+            and sku.sku_no = #{skuNo}
+        </if>
+        <if test="status != null and status!= ''">
+           and sku.status = #{status}
+        </if>
+        <if test="author != null and author!= ''">
+           and sku.author = #{author}
+        </if>
+        <if test="advertising != null and advertising!= ''">
+            and sku.advertising like concat('%',#{advertising},'%')
+        </if>
+        <if test="press != null and press!= ''">
+            and sku.press like concat('%',#{press},'%')
+        </if>
+        <if test="cateCode != null and cateCode!= ''">
+            and sku.cate_code = #{cateCode}
+        </if>
+        and sku.is_deleted = 0
+        order by sku.gmt_modified desc
+    </select>
+
+    <select id="getGoodsListT" parameterType="com.ruoyi.project.zxsd.goods.domain.GoodsEntity" resultType="com.ruoyi.project.zxsd.goods.domain.GoodsEntity">
+        select
+        sku.sku_no as skuNo,
+        sku.sku_name as skuName,
+        sku.outside_no as outsideNo,
+        st.store_name as storeName,
+        sku.cate_code as cateCode,
+        sku.fix_price as fixPrice,
+        sku.cost_price as costPrice,
+        sku.selling_price as sellingPrice,
+        sku.sale_cnt as saleCnt,
+        sku.channel_type as channelType,
+        sku.id as id,
+        sku.sort_no as sortNo,
+        sku.detail as detail,
+        sku.star_level as starLevel,
+        sku.putaway_time as putawayTime,
+        sku.status as status,
+        sku.browse_count as browseCount,
+        sku.author as author,
+        sku.advertising as advertising,
+        sku.isbn as isbn,
+        sku.press as press,
+        sku.amount_cnt as amountCnt,
+        sku.getout_time as getoutTime,
+        two.cate_name as cateTwoName,
+        one.cate_name as cateOneName
+        from t_goods_sku sku
+        left join t_code_cate two on sku.cate_code = two.cate_code
+        left join t_code_cate one on sku.cate_code = two.cate_code and two.cate_code_parent = one.cate_code
+        left join t_store_info st on sku.outside_no = st.store_no
+        where sku.is_deleted = 0
+        <if test="skuName != null and skuName!= ''">
+            and sku.sku_name like concat('%',#{skuName},'%')
+        </if>
+        <if test="skuNo != null and skuNo!= ''">
+            and sku.sku_no = #{skuNo}
+        </if>
+        <if test="status != null and status!= ''">
+            and sku.status = #{status}
+        </if>
+        <if test="author != null and author!= ''">
+            and sku.author = #{author}
+        </if>
+        <if test="advertising != null and advertising!= ''">
+            and sku.advertising like concat('%',#{advertising},'%')
+        </if>
+        <if test="press != null and press!= ''">
+            and sku.press like concat('%',#{press},'%')
+        </if>
+        <if test="cateCode != null and cateCode!= ''">
+            and sku.cate_code = #{cateCode}
+        </if>
+        order by sku.gmt_modified desc
+    </select>
+
+    <insert id="addGoodsLists">
+        INSERT into t_goods_sku
+        (
+        sku_no,
+        sku_name,
+        outside_no,
+        cate_code,
+        fix_price,
+        cost_price,
+        selling_price,
+        sale_cnt,
+        channel_type,
+        is_deleted,
+        id,
+        sort_no,
+        gmt_create,
+        create_by,
+        gmt_modified,
+        last_modified_by,
+        version,
+        detail,
+        star_level,
+        putaway_time,
+        status,
+        browse_count,
+        author,
+        advertising,
+        isbn,
+        press,
+        amount_cnt,
+        getout_time
+        )
+        VALUES
+        (
+        #{skuNo},
+        #{skuName},
+        #{outsideNo},
+        #{cateCode},
+        #{fixPrice},
+        #{costPrice},
+        #{sellingPrice},
+        #{saleCnt},
+        #{channelType},
+        '0',
+        #{id},
+        #{sortNo},
+        now(),
+        #{createBy},
+        now(),
+        #{updateBy},
+        '1',
+        #{detail},
+        #{starLevel},
+        #{putawayTime},
+        #{status},
+        0,
+        #{author},
+        #{advertising},
+        #{isbn},
+        #{press},
+        #{amountCnt},
+        #{getoutTime}
+        )
+    </insert>
+
+    <insert id="addGoodsPicList" parameterType="com.ruoyi.project.zxsd.goods.domain.GoodsPicEntity">
+        INSERT into t_goods_sku_pic
+        (
+        sku_no,
+        sur_pic_url,
+        is_deleted,
+        id,
+        sort_no,
+        gmt_create,
+        create_by,
+        gmt_modified,
+        last_modified_by,
+        version
+        )
+        value
+        <foreach collection="goodsPicEntityList" item="item" separator=",">
+        (
+        #{item.skuNo},
+        #{item.surPicUrl},
+        0,
+        #{item.id},
+        #{item.sortNo},
+        now(),
+        #{item.createBy},
+        now(),
+        #{item.updateBy},
+        0
+        )
+        </foreach>
+    </insert>
+
+    <update id="delGoods" parameterType="map">
+        <foreach collection="id" item="id" separator=";">
+        update t_goods_sku
+        set
+        is_deleted = 1,
+        gmt_modified = now(),
+        last_modified_by = #{updateBy}
+        where
+            (id=#{id})
+        </foreach>
+    </update>
+
+    <update id="trueGoods" parameterType="map">
+        <foreach collection="id" item="id" separator=";">
+            update t_goods_sku
+            set
+            status = 1,
+            gmt_modified = now(),
+            last_modified_by = #{updateBy}
+            where
+            (id=#{id})
+        </foreach>
+    </update>
+
+    <update id="falseGoods" parameterType="map">
+        <foreach collection="id" item="id" separator=";">
+            update t_goods_sku
+            set
+            status = 0,
+            gmt_modified = now(),
+            last_modified_by = #{updateBy}
+            where
+            (id=#{id})
+        </foreach>
+    </update>
+
+    <select id="getPicList" parameterType="map" resultType="java.lang.String">
+        select
+        t.sur_pic_url as surPicUrl
+        from t_goods_sku_pic t
+        where t.is_deleted = 0 and t.sku_no = #{skuNo}
+    </select>
+
+    <select id="getGood" resultType="com.ruoyi.project.zxsd.goods.domain.GoodsEntity">
+        select
+        sku.sku_no as skuNo,
+        sku.sku_name as skuName,
+        sku.outside_no as outsideNo,
+        st.store_name as storeName,
+        sku.cate_code as cateCode,
+        sku.fix_price as fixPrice,
+        sku.cost_price as costPrice,
+        sku.selling_price as sellingPrice,
+        sku.sale_cnt as saleCnt,
+        sku.channel_type as channelType,
+        sku.id as id,
+        sku.sort_no as sortNo,
+        sku.detail as detail,
+        sku.star_level as starLevel,
+        sku.putaway_time as putawayTime,
+        sku.status as status,
+        sku.browse_count as browseCount,
+        sku.author as author,
+        sku.advertising as advertising,
+        sku.isbn as isbn,
+        sku.press as press,
+        sku.amount_cnt as amountCnt,
+        sku.getout_time as getoutTime,
+        two.cate_name as cateTwoName,
+        one.cate_name as cateOneName
+        from t_goods_sku sku
+        left join t_code_cate two on sku.cate_code = two.cate_code
+        left join t_code_cate one on sku.cate_code = two.cate_code and two.cate_code_parent = one.cate_code
+        left join t_store_info st on sku.outside_no = st.store_no
+        where sku.is_deleted = 0
+        <if test="id !='' and id != null">
+            and sku.id = #{id}
+        </if>
+        <if test="skuNo !='' and skuNo != null">
+            and sku.sku_no = #{skuNo}
+        </if>
+    </select>
+
+    <update id="editGoods" parameterType="map">
+        UPDATE `xzsd`.`t_goods_sku`
+        SET
+        `sku_name` = #{skuName},
+        `outside_no` = #{outsideNo},
+        `cate_code` = #{cateCode},
+        `fix_price` = #{fixPrice},
+        `selling_price` = #{sellingPrice},
+        `sale_cnt` = #{saleCnt},
+        `gmt_modified` = now(),
+        `last_modified_by` = #{updateBy},
+        `detail` = #{detail},
+        `status` = #{status},
+        `author` = #{author},
+        `advertising` = #{advertising},
+        `isbn` = #{isbn},
+        `press` = #{press},
+        `amount_cnt` = #{amountCnt}
+        WHERE
+	    `sku_no` = #{skuNo};
+    </update>
+
+    <update id="delGoodsPir">
+        update t_goods_sku_pic
+        set
+        is_deleted = 1,
+        gmt_modified = now(),
+        last_modified_by = #{updateBy}
+        where
+        sku_no = #{skuNo}
+    </update>
+</mapper>

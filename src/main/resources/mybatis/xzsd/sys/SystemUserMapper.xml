@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.zxsd.sys.mapper.SystemUserMapper">
+
+    <select id="getSystemUserByUserName" parameterType="String" resultType="com.ruoyi.project.zxsd.sys.domain.SystemUserEntity">
+      select
+      u.user_id as userId,
+      u.user_name as userName,
+      u.nick_name as nickName,
+      su.user_realname as userRealname,
+      su.is_admin as isAdmin,
+      su.id_card as idCard,
+      su.sex as sex,
+      su.tel as tel,
+      su.phone as phone,
+      su.email as email,
+      su.id as id,
+      su.sort_no as sortNo,
+      su.role as role,
+      u.password as password
+      from sys_user u,t_sys_user su
+      where u.user_id = su.user_code
+      and u.user_name = #{userName} and su.is_deleted = '0'
+    </select>
+
+    <insert id="insertSystemUser" parameterType="com.ruoyi.project.zxsd.sys.domain.SystemUserEntity">
+        insert into sys_user(user_id,user_name,nick_name,password,del_flag)
+        VALUES
+        (#{userId},#{userName},#{nickName},#{password},0)
+    </insert>
+    <insert id="insertSystemUserInfo" parameterType="com.ruoyi.project.zxsd.sys.domain.SystemUserEntity">
+        insert into t_sys_user
+        (user_code,user_realname,is_admin,id_card,sex,tel,phone,email,remark,is_deleted,id,sort_no,gmt_create,create_by,gmt_modified,last_modified_by,role,invite_code)
+        VALUES
+        (#{userId},#{userRealname},#{isAdmin},#{idCard},#{sex},#{tel},#{phone},#{email},#{remark},0,#{id},#{sortNo},now(),#{createBy},now(),#{updateBy},#{role},#{inviteCode})
+    </insert>
+
+    <select id="getMaxSortNo" parameterType="String" resultType="int">
+        select max(su.sort_no) from ${tableName} su
+    </select>
+
+    <update id="editSystemUser" parameterType="com.ruoyi.project.zxsd.sys.domain.SystemUserEntity">
+        update sys_user
+        SET
+        nick_name = #{nickName},
+        sex = #{sex}
+        where user_id = #{userId}
+    </update>
+    <update id="editSystemUserInfo" parameterType="com.ruoyi.project.zxsd.sys.domain.SystemUserEntity">
+        update t_sys_user
+        SET
+        user_realname = #{userRealname},
+        is_admin = #{isAdmin},
+        id_card = #{idCard},
+        sex = #{sex},
+        tel = #{tel},
+        phone = #{phone},
+        email = #{email},
+        remark = #{remark},
+        gmt_modified = now(),
+        last_modified_by = #{updateBy},
+        role = #{role}
+        where user_code = #{userId}
+    </update>
+    <update id="deleteSystemUserInfo" parameterType="map">
+        <foreach collection="systemUserEntity" item="sys" separator=";">
+        update t_sys_user
+        SET
+        is_deleted = '1',
+        gmt_modified = now(),
+        last_modified_by = #{userName}
+        where (user_code = #{sys.userId})
+        </foreach>
+    </update>
+    <update id="deleteSystemUser" parameterType="map">
+        <foreach collection="systemUserEntity" item="sys" separator=";">
+        update sys_user
+        SET
+        del_flag = '1',
+        create_time = now(),
+        update_by = #{userName}
+        where (user_id = #{sys.userId})
+        </foreach>
+    </update>
+    <select id="getSystemUser" parameterType="com.ruoyi.project.zxsd.sys.domain.SystemUserEntity" resultType="com.ruoyi.project.zxsd.sys.domain.SystemUserEntity">
+        select
+        su.user_name as userName,
+        tsu.user_realname as userRealname,
+        su.nick_name as nickName,
+        tsu.role as role,
+        tsu.sex as sex,
+        tsu.phone as phone,
+        tsu.email as email,
+        tsu.id_card as idCard,
+        su.user_id as userId
+        from sys_user su,t_sys_user tsu
+        where su.user_id = tsu.user_code
+        <if test="role>-1 and role!=null">
+            and tsu.role = #{role}
+        </if>
+        <if test="userName !='' and userName != null">
+            and su.user_name = #{userName}
+        </if>
+        <if test="userRealname !='' and userRealname != null">
+            and tsu.user_realname = #{userRealname}
+        </if>
+        <if test="userId !='' and userId != null">
+            and su.user_id = #{userId}
+        </if>
+        and is_deleted = 0
+        order by tsu.gmt_create desc
+    </select>
+
+    <select id="getUser" parameterType="com.ruoyi.project.zxsd.sys.domain.SystemUserEntity" resultType="com.ruoyi.project.zxsd.sys.domain.SystemUserEntity">
+        select
+        su.user_name as userName,
+        tsu.user_realname as userRealname,
+        su.nick_name as nickName,
+        tsu.role as role,
+        tsu.sex as sex,
+        tsu.phone as phone,
+        tsu.email as email,
+        tsu.id_card as idCard,
+        su.user_id as userId
+        from sys_user su,t_sys_user tsu
+        where su.user_id = tsu.user_code
+        <if test="role>-1 and role!=null">
+            and tsu.role = #{role}
+        </if>
+        <if test="userName !='' and userName != null">
+            and su.user_name = #{userName}
+        </if>
+        <if test="userRealname !='' and userRealname != null">
+            and tsu.user_realname = #{userRealname}
+        </if>
+        <if test="userId !='' and userId != null">
+            and su.user_id = #{userId}
+        </if>
+        and is_deleted = 0
+        order by tsu.gmt_modified desc
+    </select>
+
+    <select id="getAddress" resultType="com.ruoyi.project.zxsd.store.domain.StoreInfoEntity">
+        select
+        s.store_address as storeAddress,
+        p.province_name as province,
+        s.province_no as provinceNo,
+        c.county_name as county,
+        s.county_no as countyNo,
+        s.invite_code as inviteCode
+        from  t_store_info s,
+        t_code_province p,
+        t_code_county c,
+        sys_user u
+        where s.province_no = p.province_code and s.county_no = c.county_code and s.province_no = c.province_code
+        and s.invite_code = u.invite_code
+        and u.user_name = #{userName}
+    </select>
+
+    <update id="editPwd">
+        update sys_user
+        SET
+        <if test="password !='' and password != null">
+            password = #{password},
+        </if>
+        <if test="inviteCode !='' and inviteCode != null">
+            invite_code = #{inviteCode},
+        </if>
+        update_time = now(),
+        update_by = #{userName}
+        where user_name = #{userName}
+    </update>
+</mapper>
